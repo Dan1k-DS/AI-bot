@@ -7,7 +7,7 @@
     "start": "node bot.js"
   },
   "dependencies": {
-    "@google/generative-ai": "latest",
+    "@google/genai": "latest",
     "minecraft-data": "latest",
     "minecraft-server-util": "latest",
     "mineflayer": "latest",
