@@ -8,7 +8,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 // --- НАСТРОЙКИ ---
 const SERVER_IP = "dan1k.mcsh.io";
 const BOT_NAME = "Gena"; 
-const AI_API_KEY = ""; 
+const AI_API_KEY = "sfghsfdgh"; 
 
 // [НАСТРОЙКА АДМИНА] Пропиши сюда свой ник в игре!
 const ADMIN_NICKNAME = "Dan1k"; 
