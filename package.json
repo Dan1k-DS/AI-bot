@@ -1,17 +1,17 @@
 {
-    "name": "gena-bot",
-    "version": "1.0.0",
-    "description": "Автономный ИИ-бот Гена для Майнкрафта",
-    "main": "bot.js",
-    "scripts": {
-        "start": "node bot.js"
-    },
-    "dependencies": {
-        "@google/generative-ai": "^0.21.0",
-        "minecraft-data": "^3.12.0",
-        "minecraft-server-util": "^5.4.1",
-        "mineflayer": "^4.20.1",
-        "mineflayer-collectblock": "^1.3.1",
-        "mineflayer-pathfinder": "^2.4.1"
-    }
+  "name": "gena-bot",
+  "version": "1.0.0",
+  "description": "РђРІС‚РѕРЅРѕРјРЅС‹Р№ РР-Р±РѕС‚ Р“РµРЅР° РґР»СЏ РњР°Р№РЅРєСЂР°С„С‚Р°",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "latest",
+    "minecraft-data": "latest",
+    "minecraft-server-util": "latest",
+    "mineflayer": "latest",
+    "mineflayer-collectblock": "latest",
+    "mineflayer-pathfinder": "latest"
+  }
 }
