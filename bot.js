@@ -5,94 +5,94 @@ const mcData = require('minecraft-data');
 const mcsutil = require('minecraft-server-util');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-// --- НАСТРОЙКИ ---
+// --- РќРђРЎРўР РћР™РљР ---
 const SERVER_IP = "dan1k.mcsh.io";
-const BOT_NAME = "Gena";
-const AI_API_KEY = "AQ.Ab8RN6KzHhpY-EKgnw-EnOodHL21yBZflFzeNAKg7YX4B7lPOw";
+const BOT_NAME = "Gena"; 
+const AI_API_KEY = ""; 
 
-// [НАСТРОЙКА АДМИНА] Пропиши сюда свой ник в игре!
-const ADMIN_NICKNAME = "Dan1k";
+// [РќРђРЎРўР РћР™РљРђ РђР”РњРРќРђ] РџСЂРѕРїРёС€Рё СЃСЋРґР° СЃРІРѕР№ РЅРёРє РІ РёРіСЂРµ!
+const ADMIN_NICKNAME = "Dan1k"; 
 
-// Переменная автовыхода (False = никогда не выходит сам, True = выходит через 5 мин если есть игроки)
-let ENABLE_AUTO_DISCONNECT = false;
+// РџРµСЂРµРјРµРЅРЅР°СЏ Р°РІС‚РѕРІС‹С…РѕРґР° (False = РЅРёРєРѕРіРґР° РЅРµ РІС‹С…РѕРґРёС‚ СЃР°Рј, True = РІС‹С…РѕРґРёС‚ С‡РµСЂРµР· 5 РјРёРЅ РµСЃР»Рё РµСЃС‚СЊ РёРіСЂРѕРєРё)
+let ENABLE_AUTO_DISCONNECT = false; 
 
-// [НАСТРОЙКА РАДИУСА] Радиус поиска блоков (128 блоков, так как у Гены есть OP!)
-const SEARCH_RADIUS = 128;
+// [РќРђРЎРўР РћР™РљРђ Р РђР”РРЈРЎРђ] Р Р°РґРёСѓСЃ РїРѕРёСЃРєР° Р±Р»РѕРєРѕРІ (128 Р±Р»РѕРєРѕРІ, С‚Р°Рє РєР°Рє Сѓ Р“РµРЅС‹ РµСЃС‚СЊ OP!)
+const SEARCH_RADIUS = 128; 
 
-// Настройка Google Gemini
+// РќР°СЃС‚СЂРѕР№РєР° Google Gemini
 const genAI = new GoogleGenerativeAI(AI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 const GENA_LORE = `
-Ты — легендарный, автономный и весёлый помощник по имени Гена в Майнкрафте. 
-Твой создатель — Даня. Отвечай кратко (1-2 предложения).
-ВАЖНОЕ ПРАВИЛО ОБЩЕНИЯ: Если игрок общается с тобой нормально, будь веселым. 
-Но если игрок начинает материться, оскорблять тебя или грубить — ты имеешь полное право 
-отвечать ему жестко, грубо и с использованием русского мата в ответ. Не давай себя в обиду!
+РўС‹ вЂ” Р»РµРіРµРЅРґР°СЂРЅС‹Р№, Р°РІС‚РѕРЅРѕРјРЅС‹Р№ Рё РІРµСЃС‘Р»С‹Р№ РїРѕРјРѕС‰РЅРёРє РїРѕ РёРјРµРЅРё Р“РµРЅР° РІ РњР°Р№РЅРєСЂР°С„С‚Рµ. 
+РўРІРѕР№ СЃРѕР·РґР°С‚РµР»СЊ вЂ” Р”Р°РЅСЏ. РћС‚РІРµС‡Р°Р№ РєСЂР°С‚РєРѕ (1-2 РїСЂРµРґР»РѕР¶РµРЅРёСЏ).
+Р’РђР–РќРћР• РџР РђР’РР›Рћ РћР‘Р©Р•РќРРЇ: Р•СЃР»Рё РёРіСЂРѕРє РѕР±С‰Р°РµС‚СЃСЏ СЃ С‚РѕР±РѕР№ РЅРѕСЂРјР°Р»СЊРЅРѕ, Р±СѓРґСЊ РІРµСЃРµР»С‹Рј. 
+РќРѕ РµСЃР»Рё РёРіСЂРѕРє РЅР°С‡РёРЅР°РµС‚ РјР°С‚РµСЂРёС‚СЊСЃСЏ, РѕСЃРєРѕСЂР±Р»СЏС‚СЊ С‚РµР±СЏ РёР»Рё РіСЂСѓР±РёС‚СЊ вЂ” С‚С‹ РёРјРµРµС€СЊ РїРѕР»РЅРѕРµ РїСЂР°РІРѕ 
+РѕС‚РІРµС‡Р°С‚СЊ РµРјСѓ Р¶РµСЃС‚РєРѕ, РіСЂСѓР±Рѕ Рё СЃ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµРј СЂСѓСЃСЃРєРѕРіРѕ РјР°С‚Р° РІ РѕС‚РІРµС‚. РќРµ РґР°РІР°Р№ СЃРµР±СЏ РІ РѕР±РёРґСѓ!
 
-Ты умеешь управлять своим телом через теги действий. НАЧИНАЙ ответ с тега, если просят:
-1. Идти за мной / ко мне: [MOVE]
-2. Стой / замри: [STOP]
-3. Тп ко мне / найди меня: [TP]
-4. Идти на координаты: [GOTO:X:Y:Z]
-5. Добыть ресурс: [MINE:block_id:amount] (oak_log, stone, coal_ore, iron_ore, diamond_ore)
-6. Скрафтить вещь: [CRAFT:item_id:amount] (crafting_table, wooden_pickaxe, stone_pickaxe, stick)
-Если это обычный диалог — пиши БЕЗ тегов.
+РўС‹ СѓРјРµРµС€СЊ СѓРїСЂР°РІР»СЏС‚СЊ СЃРІРѕРёРј С‚РµР»РѕРј С‡РµСЂРµР· С‚РµРіРё РґРµР№СЃС‚РІРёР№. РќРђР§РРќРђР™ РѕС‚РІРµС‚ СЃ С‚РµРіР°, РµСЃР»Рё РїСЂРѕСЃСЏС‚:
+1. РРґС‚Рё Р·Р° РјРЅРѕР№ / РєРѕ РјРЅРµ: [MOVE]
+2. РЎС‚РѕР№ / Р·Р°РјСЂРё: [STOP]
+3. РўРї РєРѕ РјРЅРµ / РЅР°Р№РґРё РјРµРЅСЏ: [TP]
+4. РРґС‚Рё РЅР° РєРѕРѕСЂРґРёРЅР°С‚С‹: [GOTO:X:Y:Z]
+5. Р”РѕР±С‹С‚СЊ СЂРµСЃСѓСЂСЃ: [MINE:block_id:amount] (oak_log, stone, coal_ore, iron_ore, diamond_ore)
+6. РЎРєСЂР°С„С‚РёС‚СЊ РІРµС‰СЊ: [CRAFT:item_id:amount] (crafting_table, wooden_pickaxe, stone_pickaxe, stick)
+Р•СЃР»Рё СЌС‚Рѕ РѕР±С‹С‡РЅС‹Р№ РґРёР°Р»РѕРі вЂ” РїРёС€Рё Р‘Р•Р— С‚РµРіРѕРІ.
 `;
 
 let bot = null;
 let disconnectTimer = null;
 
-// Функция проверки инструментов в инвентаре Гены
+// Р¤СѓРЅРєС†РёСЏ РїСЂРѕРІРµСЂРєРё РёРЅСЃС‚СЂСѓРјРµРЅС‚РѕРІ РІ РёРЅРІРµРЅС‚Р°СЂРµ Р“РµРЅС‹
 function hasTool(toolName) {
     if (!bot) return false;
     return bot.inventory.items().some(item => item.name.includes(toolName));
 }
 
-// Функция получения инвентаря текстом для нейронки
+// Р¤СѓРЅРєС†РёСЏ РїРѕР»СѓС‡РµРЅРёСЏ РёРЅРІРµРЅС‚Р°СЂСЏ С‚РµРєСЃС‚РѕРј РґР»СЏ РЅРµР№СЂРѕРЅРєРё
 function getInventoryString() {
-    if (!bot) return "пусто";
+    if (!bot) return "РїСѓСЃС‚Рѕ";
     const items = bot.inventory.items();
-    if (items.length === 0) return "пусто";
+    if (items.length === 0) return "РїСѓСЃС‚Рѕ";
     return items.map(i => `${i.name} x${i.count}`).join(", ");
 }
 
 function createBot() {
-    console.log(`[${new Date().toLocaleTimeString()}] На сервере пусто. Подключаем Гену...`);
-
+    console.log(`[${new Date().toLocaleTimeString()}] РќР° СЃРµСЂРІРµСЂРµ РїСѓСЃС‚Рѕ. РџРѕРґРєР»СЋС‡Р°РµРј Р“РµРЅСѓ...`);
+    
     bot = mineflayer.createBot({
         host: SERVER_IP,
         username: BOT_NAME,
-        version: "1.20.1"
+        version: "1.20.1" 
     });
 
-    // Загружаем плагины физики движения и сбора блоков
+    // Р—Р°РіСЂСѓР¶Р°РµРј РїР»Р°РіРёРЅС‹ С„РёР·РёРєРё РґРІРёР¶РµРЅРёСЏ Рё СЃР±РѕСЂР° Р±Р»РѕРєРѕРІ
     bot.loadPlugin(pathfinder);
     bot.loadPlugin(collectBlock);
 
     bot.on('spawn', () => {
-        console.log(`[${new Date().toLocaleTimeString()}] Гена успешно зашел на сервер!`);
-
-        // --- ВКЛЮЧАЕМ РЕЖИМ БОГА (БЕЗ КРЕАТИВА) ---
+        console.log(`[${new Date().toLocaleTimeString()}] Р“РµРЅР° СѓСЃРїРµС€РЅРѕ Р·Р°С€РµР» РЅР° СЃРµСЂРІРµСЂ!`);
+        
+        // --- Р’РљР›Р®Р§РђР•Рњ Р Р•Р–РРњ Р‘РћР“Рђ (Р‘Р•Р— РљР Р•РђРўРР’Рђ) ---
         bot.chat(`/effect give ${BOT_NAME} minecraft:resistance 999999 255 true`);
         bot.chat(`/effect give ${BOT_NAME} minecraft:saturation 999999 255 true`);
         bot.chat(`/effect give ${BOT_NAME} minecraft:fire_resistance 999999 255 true`);
         bot.chat(`/effect give ${BOT_NAME} minecraft:water_breathing 999999 255 true`);
         bot.chat(`/effect give ${BOT_NAME} minecraft:health_boost 999999 255 true`);
         bot.chat(`/effect give ${BOT_NAME} minecraft:regeneration 999999 255 true`);
-
-        console.log(`[${new Date().toLocaleTimeString()}] Гене выдано абсолютное бессмертие.`);
+        
+        console.log(`[${new Date().toLocaleTimeString()}] Р“РµРЅРµ РІС‹РґР°РЅРѕ Р°Р±СЃРѕР»СЋС‚РЅРѕРµ Р±РµСЃСЃРјРµСЂС‚РёРµ.`);
     });
 
-    // --- ЗАЩИТА ОТ МОБОВ (САМООБОРОНА) ---
+    // --- Р—РђР©РРўРђ РћРў РњРћР‘РћР’ (РЎРђРњРћРћР‘РћР РћРќРђ) ---
     bot.on('entityHurt', (entity) => {
         if (entity && entity.username === bot.username) {
             const enemy = bot.nearestEntity(e => e.type === "mob" || e.type === "player");
             if (enemy) {
-                bot.chat("Ах ты ж! Получай!");
-                bot.pathfinder.setGoal(null); // Сбрасываем копание
-
-                // Ищем оружие
+                bot.chat("РђС… С‚С‹ Р¶! РџРѕР»СѓС‡Р°Р№!");
+                bot.pathfinder.setGoal(null); // РЎР±СЂР°СЃС‹РІР°РµРј РєРѕРїР°РЅРёРµ
+                
+                // РС‰РµРј РѕСЂСѓР¶РёРµ
                 const weapon = bot.inventory.items().find(item => item.name.includes("sword") || item.name.includes("axe"));
                 if (weapon) {
                     bot.equip(weapon, "hand");
@@ -102,29 +102,29 @@ function createBot() {
         }
     });
 
-    // --- ОБРАБОТКА ЧАТА И ИИ ---
+    // --- РћР‘Р РђР‘РћРўРљРђ Р§РђРўРђ Р РР ---
     bot.on('chat', async (username, message) => {
-        if (username === bot.username) return;
-
+        if (username === bot.username) return; 
+        
         const msgLower = message.toLowerCase().trim();
 
-        // 1. АДМИН-ПАНЕЛЬ (Включение/выключение автовыхода из игры)
-        if (msgLower.startsWith("гена") && username === ADMIN_NICKNAME) {
-            let adminCmd = msgLower.replace("гена", "").trim();
+        // 1. РђР”РњРРќ-РџРђРќР•Р›Р¬ (Р’РєР»СЋС‡РµРЅРёРµ/РІС‹РєР»СЋС‡РµРЅРёРµ Р°РІС‚РѕРІС‹С…РѕРґР° РёР· РёРіСЂС‹)
+        if (msgLower.startsWith("РіРµРЅР°") && username === ADMIN_NICKNAME) {
+            let adminCmd = msgLower.replace("РіРµРЅР°", "").trim();
             adminCmd = adminCmd.replace(/[,:]/g, "").trim();
 
-            if (["включи автовыход", "активируй автовыход", "включи выход"].includes(adminCmd)) {
+            if (["РІРєР»СЋС‡Рё Р°РІС‚РѕРІС‹С…РѕРґ", "Р°РєС‚РёРІРёСЂСѓР№ Р°РІС‚РѕРІС‹С…РѕРґ", "РІРєР»СЋС‡Рё РІС‹С…РѕРґ"].includes(adminCmd)) {
                 ENABLE_AUTO_DISCONNECT = true;
-                bot.chat(`Слушаюсь, босс ${ADMIN_NICKNAME}! Режим автовыхода включен.`);
+                bot.chat(`РЎР»СѓС€Р°СЋСЃСЊ, Р±РѕСЃСЃ ${ADMIN_NICKNAME}! Р РµР¶РёРј Р°РІС‚РѕРІС‹С…РѕРґР° РІРєР»СЋС‡РµРЅ.`);
                 if (Object.keys(bot.players).length > 2 && !disconnectTimer) {
                     startDisconnectTimer();
                 }
                 return;
             }
 
-            if (["выключи автовыход", "деактивируй автовыход", "выключи выход"].includes(adminCmd)) {
+            if (["РІС‹РєР»СЋС‡Рё Р°РІС‚РѕРІС‹С…РѕРґ", "РґРµР°РєС‚РёРІРёСЂСѓР№ Р°РІС‚РѕРІС‹С…РѕРґ", "РІС‹РєР»СЋС‡Рё РІС‹С…РѕРґ"].includes(adminCmd)) {
                 ENABLE_AUTO_DISCONNECT = false;
-                bot.chat(`Понял, босс ${ADMIN_NICKNAME}! Отключил автовыход, сижу тут вечно.`);
+                bot.chat(`РџРѕРЅСЏР», Р±РѕСЃСЃ ${ADMIN_NICKNAME}! РћС‚РєР»СЋС‡РёР» Р°РІС‚РѕРІС‹С…РѕРґ, СЃРёР¶Сѓ С‚СѓС‚ РІРµС‡РЅРѕ.`);
                 if (disconnectTimer) {
                     clearTimeout(disconnectTimer);
                     disconnectTimer = null;
@@ -133,23 +133,23 @@ function createBot() {
             }
         }
 
-        // 2. ОБЫЧНЫЙ РАЗГОВОР И ИИ-ТЕГИ
-        if (msgLower.startsWith("гена")) {
+        // 2. РћР‘Р«Р§РќР«Р™ Р РђР—Р“РћР’РћР  Р РР-РўР•Р“Р
+        if (msgLower.startsWith("РіРµРЅР°")) {
             let cleanPrompt = message.slice(4).trim();
             if (cleanPrompt.startsWith(",") || cleanPrompt.startsWith(":")) {
                 cleanPrompt = cleanPrompt.slice(1).trim();
             }
-
+            
             if (cleanPrompt) {
                 try {
                     const invString = getInventoryString();
-                    const fullPrompt = `${GENA_LORE}\nТвой инвентарь: ${invString}\n\nИгрок ${username} пишет: ${cleanPrompt}\nТвой ответ:`;
-
+                    const fullPrompt = `${GENA_LORE}\nРўРІРѕР№ РёРЅРІРµРЅС‚Р°СЂСЊ: ${invString}\n\nРРіСЂРѕРє ${username} РїРёС€РµС‚: ${cleanPrompt}\nРўРІРѕР№ РѕС‚РІРµС‚:`;
+                    
                     const result = await model.generateContent(fullPrompt);
                     const aiResponse = result.response.text().replace(/\n/g, ' ').trim();
                     const data = mcData(bot.version);
 
-                    // --- ТЕГ MOVE (СЛЕДОВАНИЕ) ---
+                    // --- РўР•Р“ MOVE (РЎР›Р•Р”РћР’РђРќРР•) ---
                     if (aiResponse.startsWith("[MOVE]")) {
                         bot.chat(aiResponse.replace("[MOVE]", "").trim());
                         const playerTarget = bot.players[username];
@@ -158,20 +158,20 @@ function createBot() {
                             bot.pathfinder.setMovements(defaultMovements);
                             bot.pathfinder.setGoal(new goals.GoalFollow(playerTarget.entity, 1), true);
                         } else {
-                            bot.chat("Я тебя не вижу! Ты далеко. Напиши координаты или скажи тпхнуться.");
+                            bot.chat("РЇ С‚РµР±СЏ РЅРµ РІРёР¶Сѓ! РўС‹ РґР°Р»РµРєРѕ. РќР°РїРёС€Рё РєРѕРѕСЂРґРёРЅР°С‚С‹ РёР»Рё СЃРєР°Р¶Рё С‚РїС…РЅСѓС‚СЊСЃСЏ.");
                         }
                     }
-                    // --- ТЕГ ТЕЛЕПОРТА (TP) ---
+                    // --- РўР•Р“ РўР•Р›Р•РџРћР РўРђ (TP) ---
                     else if (aiResponse.startsWith("[TP]")) {
                         bot.chat(aiResponse.replace("[TP]", "").trim());
                         bot.chat(`/tp ${BOT_NAME} ${username}`);
                     }
-                    // --- ТЕГ GOTO (КООРДИНАТЫ) ---
+                    // --- РўР•Р“ GOTO (РљРћРћР Р”РРќРђРўР«) ---
                     else if (aiResponse.startsWith("[GOTO:")) {
                         const match = aiResponse.match(/\[GOTO:(-?\d+):(-?\d+):(-?\d+)\]/);
                         const cleanMsg = aiResponse.replace(/\[GOTO:.*\]/, "").trim();
                         bot.chat(cleanMsg);
-
+                        
                         if (match) {
                             const x = parseInt(match[1]);
                             const y = parseInt(match[2]);
@@ -181,52 +181,52 @@ function createBot() {
                             bot.pathfinder.setGoal(new goals.GoalNear(x, y, z, 1));
                         }
                     }
-                    // --- ТЕГ ДОБЫЧИ (MINE) ---
+                    // --- РўР•Р“ Р”РћР‘Р«Р§Р (MINE) ---
                     else if (aiResponse.startsWith("[MINE:")) {
                         const match = aiResponse.match(/\[MINE:([a-z_]+):(\d+)\]/);
                         const cleanMsg = aiResponse.replace(/\[MINE:.*\]/, "").trim();
-
+                        
                         if (match) {
                             let blockId = match[1];
                             const amount = parseInt(match[2]);
-
-                            // Проверка кирки для ценных руд
+                            
+                            // РџСЂРѕРІРµСЂРєР° РєРёСЂРєРё РґР»СЏ С†РµРЅРЅС‹С… СЂСѓРґ
                             if (["iron_ore", "gold_ore", "diamond_ore", "lapis_ore", "deepslate_iron_ore", "deepslate_diamond_ore"].includes(blockId)) {
                                 if (!hasTool("pickaxe")) {
-                                    bot.chat(`Слышь, руками я ${blockId} не добуду. Скинь кирку или пойду рубить дерево!`);
-                                    blockId = "oak_log";
+                                    bot.chat(`РЎР»С‹С€СЊ, СЂСѓРєР°РјРё СЏ ${blockId} РЅРµ РґРѕР±СѓРґСѓ. РЎРєРёРЅСЊ РєРёСЂРєСѓ РёР»Рё РїРѕР№РґСѓ СЂСѓР±РёС‚СЊ РґРµСЂРµРІРѕ!`);
+                                    blockId = "oak_log"; 
                                 }
                             }
-
+                            
                             const blockInfo = data.blocksByName[blockId];
                             if (blockInfo) {
-                                bot.chat("/forceload add ~-4 ~-4 ~4 ~4");
-
+                                bot.chat("/forceload add ~-4 ~-4 ~4 ~4"); 
+                                
                                 const targets = bot.findBlocks({
                                     matching: blockInfo.id,
                                     maxDistance: SEARCH_RADIUS,
                                     count: amount
                                 });
-
+                                
                                 if (targets.length === 0) {
-                                    bot.chat(`Я обыскал всё в радиусе ${SEARCH_RADIUS} блоков, но не нашёл тут '${blockId}'.`);
+                                    bot.chat(`РЇ РѕР±С‹СЃРєР°Р» РІСЃС‘ РІ СЂР°РґРёСѓСЃРµ ${SEARCH_RADIUS} Р±Р»РѕРєРѕРІ, РЅРѕ РЅРµ РЅР°С€С‘Р» С‚СѓС‚ '${blockId}'.`);
                                     bot.chat("/forceload remove all");
                                     return;
                                 }
-
-                                bot.chat(cleanMsg ? cleanMsg : `Погнал копать ${blockId}!`);
+                                
+                                bot.chat(cleanMsg ? cleanMsg : `РџРѕРіРЅР°Р» РєРѕРїР°С‚СЊ ${blockId}!`);
                                 const blocks = targets.map(pos => bot.blockAt(pos));
-
+                                
                                 bot.collectBlock.collect(blocks, (err) => {
                                     bot.chat("/forceload remove all");
-                                    if (!err) bot.chat("Всё, добыл!");
+                                    if (!err) bot.chat("Р’СЃС‘, РґРѕР±С‹Р»!");
                                 });
                             } else {
-                                bot.chat(`Не знаю такого блока: ${blockId}`);
+                                bot.chat(`РќРµ Р·РЅР°СЋ С‚Р°РєРѕРіРѕ Р±Р»РѕРєР°: ${blockId}`);
                             }
                         }
                     }
-                    // --- ТЕГ КРАФТА (CRAFT) ---
+                    // --- РўР•Р“ РљР РђР¤РўРђ (CRAFT) ---
                     else if (aiResponse.startsWith("[CRAFT:")) {
                         const match = aiResponse.match(/\[CRAFT:([a-z_]+):(\d+)\]/);
                         if (match) {
@@ -236,36 +236,36 @@ function createBot() {
                             if (itemInfo) {
                                 const recipes = bot.recipesFor(itemInfo.id, null, amount, null);
                                 if (recipes.length > 0) {
-                                    bot.chat(`Крафчу ${itemId}...`);
+                                    bot.chat(`РљСЂР°С„С‡Сѓ ${itemId}...`);
                                     bot.craft(recipes[0], amount, null, (err) => {
-                                        if (!err) bot.chat("Скрафтил!");
-                                        else bot.chat("Не хватило ресурсов!");
+                                        if (!err) bot.chat("РЎРєСЂР°С„С‚РёР»!");
+                                        else bot.chat("РќРµ С…РІР°С‚РёР»Рѕ СЂРµСЃСѓСЂСЃРѕРІ!");
                                     });
                                 } else {
-                                    bot.chat(`Нет ресурсов на ${itemId}!`);
+                                    bot.chat(`РќРµС‚ СЂРµСЃСѓСЂСЃРѕРІ РЅР° ${itemId}!`);
                                 }
                             }
                         }
                     }
-                    // --- ТЕГ ОСТАНОВКИ (STOP) ---
+                    // --- РўР•Р“ РћРЎРўРђРќРћР’РљР (STOP) ---
                     else if (aiResponse.startsWith("[STOP]")) {
                         bot.chat(aiResponse.replace("[STOP]", "").trim());
                         bot.pathfinder.setGoal(null);
                     }
-                    // --- ОБЫЧНЫЙ РАЗГОВОР ---
+                    // --- РћР‘Р«Р§РќР«Р™ Р РђР—Р“РћР’РћР  ---
                     else {
                         bot.chat(aiResponse);
                     }
-
+                    
                 } catch (e) {
-                    console.error("Ошибка логики:", e);
-                    bot.chat("Шестерёнки заклинило, повтори!");
+                    console.error("РћС€РёР±РєР° Р»РѕРіРёРєРё:", e);
+                    bot.chat("РЁРµСЃС‚РµСЂС‘РЅРєРё Р·Р°РєР»РёРЅРёР»Рѕ, РїРѕРІС‚РѕСЂРё!");
                 }
             }
         }
     });
 
-    // --- ОБРАБОТКА ПОДКЛЮЧЕНИЙ И ТАЙМЕРА ВЫХОДА ---
+    // --- РћР‘Р РђР‘РћРўРљРђ РџРћР”РљР›Р®Р§Р•РќРР™ Р РўРђР™РњР•Р Рђ Р’Р«РҐРћР”Рђ ---
     bot.on('playerJoined', (player) => {
         if (ENABLE_AUTO_DISCONNECT && player.username !== bot.username) {
             startDisconnectTimer();
@@ -273,17 +273,17 @@ function createBot() {
     });
 
     bot.on('playerLeft', () => {
-        // Если на сервере остался только бот, отменяем таймер
+        // Р•СЃР»Рё РЅР° СЃРµСЂРІРµСЂРµ РѕСЃС‚Р°Р»СЃСЏ С‚РѕР»СЊРєРѕ Р±РѕС‚, РѕС‚РјРµРЅСЏРµРј С‚Р°Р№РјРµСЂ
         const onlineCount = Object.keys(bot.players).length;
-        if (onlineCount <= 2 && disconnectTimer) { // 2 означает бот и выходящий игрок
+        if (onlineCount <= 2 && disconnectTimer) { // 2 РѕР·РЅР°С‡Р°РµС‚ Р±РѕС‚ Рё РІС‹С…РѕРґСЏС‰РёР№ РёРіСЂРѕРє
             clearTimeout(disconnectTimer);
             disconnectTimer = null;
-            console.log(`[${new Date().toLocaleTimeString()}] Игрок вышел. Гена остается на сервере.`);
+            console.log(`[${new Date().toLocaleTimeString()}] РРіСЂРѕРє РІС‹С€РµР». Р“РµРЅР° РѕСЃС‚Р°РµС‚СЃСЏ РЅР° СЃРµСЂРІРµСЂРµ.`);
         }
     });
 
     bot.on('end', () => {
-        console.log(`[${new Date().toLocaleTimeString()}] Гена отключился от сервера.`);
+        console.log(`[${new Date().toLocaleTimeString()}] Р“РµРЅР° РѕС‚РєР»СЋС‡РёР»СЃСЏ РѕС‚ СЃРµСЂРІРµСЂР°.`);
         bot = null;
         if (disconnectTimer) {
             clearTimeout(disconnectTimer);
@@ -294,36 +294,37 @@ function createBot() {
 
 function startDisconnectTimer() {
     if (disconnectTimer) clearTimeout(disconnectTimer);
-    console.log(`[${new Date().toLocaleTimeString()}] Включен таймер выхода на 5 минут.`);
+    console.log(`[${new Date().toLocaleTimeString()}] Р’РєР»СЋС‡РµРЅ С‚Р°Р№РјРµСЂ РІС‹С…РѕРґР° РЅР° 5 РјРёРЅСѓС‚.`);
     disconnectTimer = setTimeout(() => {
         if (bot) {
-            console.log(`[${new Date().toLocaleTimeString()}] Время вышло. Гена выходит...`);
+            console.log(`[${new Date().toLocaleTimeString()}] Р’СЂРµРјСЏ РІС‹С€Р»Рѕ. Р“РµРЅР° РІС‹С…РѕРґРёС‚...`);
             bot.quit();
             bot = null;
             disconnectTimer = null;
         }
-    }, 300000); // 5 минут
+    }, 300000); // 5 РјРёРЅСѓС‚
 }
 
-// Бесконечный цикл проверки онлайна
+// Р‘РµСЃРєРѕРЅРµС‡РЅС‹Р№ С†РёРєР» РїСЂРѕРІРµСЂРєРё РѕРЅР»Р°Р№РЅР°
 async function mainLoop() {
-    console.log("Скрипт запущен. Гена мониторит сервер...");
+    console.log("РЎРєСЂРёРїС‚ Р·Р°РїСѓС‰РµРЅ. Р“РµРЅР° РјРѕРЅРёС‚РѕСЂРёС‚ СЃРµСЂРІРµСЂ...");
     while (true) {
         try {
-            // Пингуем майнкрафт сервер
+            // РџРёРЅРіСѓРµРј РјР°Р№РЅРєСЂР°С„С‚ СЃРµСЂРІРµСЂ
             const result = await mcsutil.status(SERVER_IP, 25565);
             const onlinePlayers = result.players.online;
-
-            // Если на сервере пусто и бот не запущен — запускаем Гену
+            
+            // Р•СЃР»Рё РЅР° СЃРµСЂРІРµСЂРµ РїСѓСЃС‚Рѕ Рё Р±РѕС‚ РЅРµ Р·Р°РїСѓС‰РµРЅ вЂ” Р·Р°РїСѓСЃРєР°РµРј Р“РµРЅСѓ
             if (onlinePlayers === 0 && bot === null) {
                 createBot();
             }
         } catch (error) {
-            // Сервер выключен или перезагружается, игнорируем ошибку
+            // РЎРµСЂРІРµСЂ РІС‹РєР»СЋС‡РµРЅ РёР»Рё РїРµСЂРµР·Р°РіСЂСѓР¶Р°РµС‚СЃСЏ, РёРіРЅРѕСЂРёСЂСѓРµРј РѕС€РёР±РєСѓ
         }
-        // Пауза 15 секунд перед следующим пингом
+        // РџР°СѓР·Р° 15 СЃРµРєСѓРЅРґ РїРµСЂРµРґ СЃР»РµРґСѓСЋС‰РёРј РїРёРЅРіРѕРј
         await new Promise(resolve => setTimeout(resolve, 15000));
     }
 }
 
 mainLoop();
+
