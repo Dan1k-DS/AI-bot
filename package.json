@@ -7,7 +7,7 @@
     "start": "node bot.js"
   },
   "dependencies": {
-    "@google/genai": "latest",
+    "groq-sdk": "latest",
     "minecraft-data": "latest",
     "minecraft-server-util": "latest",
     "mineflayer": "latest",
