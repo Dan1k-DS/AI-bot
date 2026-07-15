@@ -4,22 +4,22 @@ const collectBlock = require('mineflayer-collectblock').plugin;
 const mcData = require('minecraft-data');
 const mcsutil = require('minecraft-server-util');
 
-// Подключаем НОВУЮ библиотеку Google Gen AI
-const { GoogleGenAI } = require("@google/genai");
+// Подключаем НОВУЮ библиотеку - Groq
+const Groq = require('groq-sdk');
 
 // --- НАСТРОЙКИ ---
-const SERVER_IP = "dan1k.mcsh.io";
+const SERVER_IP = "danik.mcsh.io";
 const BOT_NAME = "Gena"; 
 
-// Твой НОВЫЙ ключ авторизации (Auth Key)
-const AI_API_KEY = "AQ.Ab8RN6KQ6hZVHlhCH"; 
+// Вставь сюда свой НОВЫЙ ключ от Groq (начинается на gsk_...)
+const AI_API_KEY = "ВСТАВЬ_СЮДА_КЛЮЧ_GROQ"; 
 
-const ADMIN_NICKNAME = "Dan1k"; 
+const ADMIN_NICKNAME = "regduec"; 
 let ENABLE_AUTO_DISCONNECT = false; 
 const SEARCH_RADIUS = 128; 
 
-// Инициализация нового клиента GoogleGenAI
-const ai = new GoogleGenAI({ apiKey: AI_API_KEY });
+// Инициализация клиента Groq
+const groq = new Groq({ apiKey: AI_API_KEY });
 
 const GENA_LORE = `
 Ты — легендарный, автономный и весёлый помощник по имени Гена в Майнкрафте. 
@@ -59,7 +59,7 @@ function createBot() {
     bot = mineflayer.createBot({
         host: SERVER_IP,
         username: BOT_NAME,
-        version: "1.21.1" // Указываем точную Java-версию сервера
+        version: "1.21.1" 
     });
 
     bot.loadPlugin(pathfinder);
@@ -99,7 +99,6 @@ function createBot() {
         
         const msgLower = message.toLowerCase().trim();
 
-        // 1. АДМИН-ПАНЕЛЬ
         if (msgLower.startsWith("гена") && username === ADMIN_NICKNAME) {
             let adminCmd = msgLower.replace("гена", "").trim();
             adminCmd = adminCmd.replace(/[,:]/g, "").trim();
@@ -124,7 +123,6 @@ function createBot() {
             }
         }
 
-        // 2. ЛОГИКА ИИ И ТЕГИ
         if (msgLower.startsWith("гена")) {
             let cleanPrompt = message.slice(4).trim();
             if (cleanPrompt.startsWith(",") || cleanPrompt.startsWith(":")) {
@@ -132,24 +130,26 @@ function createBot() {
             }
             
             if (cleanPrompt) {
-                // ПРОВЕРКА НАЛИЧИЯ ТОКЕНА
-                if (!AI_API_KEY || AI_API_KEY.trim() === "") {
+                if (!AI_API_KEY || AI_API_KEY.includes("ВСТАВЬ_СЮДА")) {
                     bot.chat("Мой создатель забыл вставить мне API-ключ! Я ничего не понимаю.");
                     return;
                 }
 
                 try {
                     const invString = getInventoryString();
-                    const fullPrompt = `${GENA_LORE}\nТвой инвентарь: ${invString}\n\nИгрок ${username} пишет: ${cleanPrompt}\nТвой ответ:`;
                     
-                    // --- НОВЫЙ ИНТЕРФЕЙС ИИ INTERACTIONS API ---
-                    const interaction = await ai.interactions.create({
-                        model: "gemini-3.5-flash",
-                        input: fullPrompt
+                    // Запрос к нейросети Groq (Llama 3)
+                    const chatCompletion = await groq.chat.completions.create({
+                        messages: [
+                            { role: "system", content: `${GENA_LORE}\nТвой инвентарь: ${invString}` },
+                            { role: "user", content: `Игрок ${username} пишет: ${cleanPrompt}\nТвой ответ:` }
+                        ],
+                        model: "llama3-70b-8192", // Одна из самых умных моделей
+                        temperature: 0.7,
+                        max_tokens: 150,
                     });
                     
-                    // Получаем текст ответа
-                    const aiResponse = interaction.output_text.replace(/\n/g, ' ').trim();
+                    const aiResponse = chatCompletion.choices[0].message.content.replace(/\n/g, ' ').trim();
                     const data = mcData(bot.version);
 
                     if (aiResponse.startsWith("[MOVE]")) {
@@ -256,14 +256,7 @@ function createBot() {
                     console.error("\n================ ОШИБКА ИИ ================");
                     console.error(e);
                     console.error("===========================================\n");
-                    
-                    if (e.message && e.message.includes("API key not valid")) {
-                        bot.chat("Мой API-ключ не работает! Даня, проверь настройки!");
-                    } else if (e.message && e.message.includes("quota")) {
-                        bot.chat("У меня кончились лимиты, Гугл просит отдохнуть!");
-                    } else {
-                        bot.chat("Шестерёнки заклинило, посмотри ошибку в консоли хостинга!");
-                    }
+                    bot.chat("Шестерёнки заклинило, посмотри ошибку в консоли хостинга!");
                 }
             }
         }
@@ -325,4 +318,3 @@ async function mainLoop() {
 }
 
 mainLoop();
-
